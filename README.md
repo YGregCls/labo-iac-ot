@@ -56,6 +56,28 @@ flowchart TB
     style SUP fill:#e5efff,stroke:#4683dc,color:#1e477c
     style FW fill:#fff0d7,stroke:#cf8b27,color:#754b11
 ```
+## Documentation pédagogique
+
+Ce laboratoire est construit progressivement dans une démarche
+d'apprentissage de l'Infrastructure as Code et de la cybersécurité OT.
+
+Chaque phase dispose d'un guide détaillé comprenant les notions
+théoriques, les commandes expliquées, les configurations,
+les vérifications et les résultats obtenus.
+
+### Guides de formation
+
+| Phase | Sujet | Documentation |
+|---|---|---|
+| 00 | Préparation Git et GitHub | À documenter |
+| 01 | Vagrant et VMware Workstation | [Consulter le guide](docs/phase-01-vagrant-vmware.md) |
+| 02 | Automatisation avec Ansible | À venir |
+| 03 | Architecture réseau et segmentation | À venir |
+| 04 | Terraform et procédé industriel | À venir |
+| 05 | Développement Python | À venir |
+| 06 | Docker et supervision | À venir |
+| 07 | Pare-feu et cybersécurité OT | À venir |
+| 08 | Surveillance réseau | À venir |
 
 ### Principes de sécurité
 
