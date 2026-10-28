@@ -526,8 +526,124 @@ contenues dans la machine virtuelle.
 - Étendre progressivement l'architecture.
 
 ---
+## 18. Tests du cycle de vie Vagrant
 
-## 18. Conclusion
+### Objectif
+
+Vérifier que la machine virtuelle peut être arrêtée,
+redémarrée et administrée sans intervention manuelle
+dans VMware Workstation.
+
+Ces tests permettent de valider la gestion du cycle
+de vie de notre première infrastructure automatisée.
+
+### Test 1 — Arrêt propre de la VM
+
+Commande exécutée depuis Windows PowerShell :
+
+```powershell
+vagrant halt
+```
+
+**Résultat :** la machine virtuelle Ubuntu a été arrêtée.
+
+**Validation :** réussie.
+
+La commande n'a pas supprimé la VM ni son disque virtuel.
+
+### Test 2 — Redémarrage de la VM
+
+Commande exécutée :
+
+```powershell
+vagrant up
+```
+
+**Résultat :** la machine virtuelle existante a redémarré.
+
+**Validation :** réussie.
+
+Vagrant a réutilisé l'environnement déjà créé.
+
+### Test 3 — Vérification de l'état
+
+Commande exécutée :
+
+```powershell
+vagrant status
+```
+
+Résultat observé :
+
+```text
+default    running (vmware_desktop)
+```
+
+**Validation :** réussie.
+
+La VM est correctement reconnue par Vagrant après redémarrage.
+
+### Test 4 — Vérification de l'accès SSH
+
+Commande :
+
+```powershell
+vagrant ssh -c "hostname"
+```
+
+Résultat attendu et confirmé :
+
+```text
+ctrl
+```
+
+**Validation :** réussie.
+
+L'accès SSH et le nom d'hôte Linux sont fonctionnels
+après le redémarrage de la machine.
+
+### Schéma du cycle de vie
+
+```mermaid
+stateDiagram-v2
+    [*] --> NotCreated
+    NotCreated --> Running: vagrant up
+    Running --> Stopped: vagrant halt
+    Stopped --> Running: vagrant up
+    Running --> Suspended: vagrant suspend
+    Suspended --> Running: vagrant resume
+    Running --> NotCreated: vagrant destroy
+```
+
+Les états liés à `suspend`, `resume` et `destroy`
+sont présentés à titre pédagogique.
+Ces commandes n'ont pas encore été testées.
+
+### Synthèse des validations
+
+| Test | Résultat |
+|---|---|
+| Création initiale de la VM | Réussi |
+| Démarrage Ubuntu | Réussi |
+| Connexion SSH initiale | Réussi |
+| Arrêt avec vagrant halt | Réussi |
+| Redémarrage avec vagrant up | Réussi |
+| Vérification vagrant status | Réussi |
+| Accès SSH après redémarrage | Réussi |
+
+### Conclusion des tests
+
+La gestion de base du cycle de vie de notre VM
+avec Vagrant et VMware Workstation est fonctionnelle.
+
+Ces tests confirment que nous pouvons arrêter
+et redémarrer la machine sans devoir la recréer.
+
+Ils ne constituent pas encore une preuve de
+reconstruction complète depuis un environnement vierge.
+
+
+## 19. Conclusion
 
 Cette première partie démontre qu'une machine
 virtuelle Linux peut être créée automatiquement
