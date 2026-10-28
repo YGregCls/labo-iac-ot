@@ -643,15 +643,211 @@ Ils ne constituent pas encore une preuve de
 reconstruction complète depuis un environnement vierge.
 
 
-## 19. Conclusion
+## 19. Test de persistance et reconstruction complète
 
-Cette première partie démontre qu'une machine
-virtuelle Linux peut être créée automatiquement
-à partir d'un fichier Vagrantfile.
+### 19.1 Objectif pédagogique
 
-Elle constitue le socle de notre infrastructure
-virtuelle reproductible.
+Démontrer la différence entre :
 
-Les étapes suivantes permettront de développer
-l'automatisation, la segmentation réseau
-et les services industriels du laboratoire.
+- La persistance des données d'une VM existante.
+- La reconstruction d'une nouvelle VM à partir du code.
+
+Ce test permet de comprendre les limites de Vagrant
+et la nécessité d'automatiser les configurations logicielles.
+
+### 19.2 Architecture de l'expérience
+
+```mermaid
+flowchart TB
+    A["Vagrantfile"]
+    B["Première VM Ubuntu"]
+    C["Création du fichier témoin"]
+    D["Arrêt et redémarrage"]
+    E["Fichier conservé"]
+    F["Suppression de la VM"]
+    G["Reconstruction avec Vagrant"]
+    H["Nouvelle VM sans fichier témoin"]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    A --> G
+    G --> H
+```
+
+### 19.3 Création du fichier témoin
+
+Commande exécutée depuis Windows PowerShell :
+
+```powershell
+vagrant ssh -c "touch ~/test-persistance.txt"
+```
+
+La commande `touch` crée un fichier vide
+dans le répertoire personnel de l'utilisateur Linux.
+
+Vérification :
+
+```powershell
+vagrant ssh -c "ls -l ~/test-persistance.txt"
+```
+
+Résultat : fichier présent.
+
+### 19.4 Vérification de la persistance
+
+Arrêt de la machine :
+
+```powershell
+vagrant halt
+```
+
+Redémarrage :
+
+```powershell
+vagrant up
+```
+
+Nouvelle vérification du fichier :
+
+```powershell
+vagrant ssh -c "ls -l ~/test-persistance.txt"
+```
+
+Résultat : fichier toujours présent.
+
+Conclusion : les données enregistrées sur le disque
+virtuel survivent à un arrêt et à un redémarrage.
+
+### 19.5 Suppression de la machine virtuelle
+
+Avant la suppression, la machine cible a été vérifiée :
+
+```powershell
+vagrant status
+```
+
+Résultat :
+
+```text
+default    running (vmware_desktop)
+```
+
+Après confirmation explicite de la suppression,
+la commande suivante a été exécutée :
+
+```powershell
+vagrant destroy default
+```
+
+Résultat :
+
+```text
+Stopping the VMware VM...
+Deleting the VM...
+```
+
+Vérification :
+
+```powershell
+vagrant status
+```
+
+Résultat :
+
+```text
+default    not created (vmware_desktop)
+```
+
+La machine virtuelle de test a été supprimée.
+
+Attention : cette opération entraîne la perte
+des données enregistrées sur son disque virtuel,
+sauf sauvegarde externe disponible.
+
+### 19.6 Reconstruction complète
+
+Commande :
+
+```powershell
+vagrant up --provider=vmware_desktop
+```
+
+Vagrant a recréé une machine virtuelle Ubuntu
+à partir du Vagrantfile existant.
+
+Le déploiement s'est terminé correctement.
+
+### 19.7 Vérification du fichier témoin
+
+Commande :
+
+```powershell
+vagrant ssh -c "if [ -e /home/vagrant/test-persistance.txt ]; then echo PRESENT; else echo ABSENT; fi"
+```
+
+Résultat :
+
+```text
+ABSENT
+```
+
+Le fichier créé manuellement dans l'ancienne VM
+n'a pas été recréé.
+
+### 19.8 Vérification des ressources
+
+Commande :
+
+```powershell
+vagrant ssh -c "hostname; nproc; free -h"
+```
+
+Résultats observés :
+
+| Paramètre | Résultat |
+|---|---|
+| Nom d'hôte | ctrl |
+| Processeurs disponibles | 2 |
+| RAM totale | 1,9 Gio |
+| RAM disponible | 1,6 Gio |
+| Swap total | 2,9 Gio |
+| Swap utilisé | 0 |
+
+Les caractéristiques observées correspondent
+à la configuration attendue.
+
+### 19.9 Bilan de l'expérience
+
+| Test | Résultat |
+|---|---|
+| Création d'un fichier témoin | Réussi |
+| Conservation après redémarrage | Réussi |
+| Suppression contrôlée de la VM | Réussi |
+| État not created | Confirmé |
+| Reconstruction depuis le Vagrantfile | Réussi |
+| Accès SSH après reconstruction | Réussi |
+| Vérification du hostname | Réussi |
+| Vérification des vCPU | Réussi |
+| Vérification de la RAM | Réussi |
+| Absence du fichier témoin | Confirmée |
+
+### 19.10 Enseignements
+
+Vagrant permet de décrire et de reconstruire
+une infrastructure virtuelle.
+
+Cependant, le Vagrantfile actuel ne décrit pas
+l'ensemble de la configuration logicielle du système.
+
+Les installations et modifications réalisées manuellement
+dans Ubuntu ne sont donc pas automatiquement reproduites.
+
+Dans la suite du projet, Ansible permettra de définir
+et d'appliquer la configuration logicielle des machines.
+
+L'objectif sera de pouvoir reconstruire non seulement
+les VM, mais également les services nécessaires au laboratoire.
