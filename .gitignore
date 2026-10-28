@@ -1,0 +1,40 @@
+# Secrets et identifiants
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Vagrant et machines virtuelles
+.vagrant/
+*.vmdk
+*.vmem
+*.vmsd
+*.vmsn
+*.nvram
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Donnees locales et captures
+*.pcap
+*.pcapng
+*.log
+backups/
+data/
