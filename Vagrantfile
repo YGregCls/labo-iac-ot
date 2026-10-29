@@ -28,6 +28,14 @@ Vagrant.configure("2") do |config|
     # Nom de la machine dans Ubuntu
     ctrl.vm.hostname = "ctrl"
 
+    # Interface de gestion du laboratoire IaC OT
+    # Reseau VMware VMnet2 : 192.168.56.0/24
+    # Adresse statique pour l'administration Ansible
+
+    ctrl.vm.network "private_network",
+      ip: "192.168.56.10",
+      netmask: "255.255.255.0"
+
     # Configuration VMware
     ctrl.vm.provider "vmware_desktop" do |vmware|
 
