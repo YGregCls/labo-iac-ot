@@ -1,0 +1,11 @@
+---
+- name: Demonstrer l'idempotence avec Ansible
+  hosts: controllers
+  gather_facts: false
+
+  tasks:
+    - name: Garantir la presence du repertoire de demonstration
+      ansible.builtin.file:
+        path: /home/vagrant/ot-iac-lab/demo-idempotence
+        state: directory
+        mode: '0755'

@@ -1,0 +1,24 @@
+# Gestion des fins de ligne du projet IaC OT
+
+# Fichiers de configuration
+*.yml text eol=lf
+*.yaml text eol=lf
+*.ini text eol=lf
+*.toml text eol=lf
+
+# Scripts Linux et Python
+*.sh text eol=lf
+*.py text eol=lf
+
+# Infrastructure as Code
+*.tf text eol=lf
+*.tfvars text eol=lf
+Vagrantfile text eol=lf
+
+# Documentation
+*.md text eol=lf
+
+# Scripts Windows
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf

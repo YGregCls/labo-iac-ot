@@ -1,0 +1,13 @@
+---
+- name: Audit initial de la machine OT-PROCESS
+  hosts: process
+  gather_facts: true
+
+  tasks:
+    - name: Afficher les informations du systeme
+      ansible.builtin.debug:
+        msg:
+          - "Machine : {{ ansible_facts['hostname'] }}"
+          - "Systeme : {{ ansible_facts['distribution'] }}"
+          - "Version : {{ ansible_facts['distribution_version'] }}"
+          - "Architecture : {{ ansible_facts['architecture'] }}"

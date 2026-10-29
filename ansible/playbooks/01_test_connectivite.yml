@@ -1,0 +1,8 @@
+---
+- name: Verifier la connectivite du noeud de controle
+  hosts: controllers
+  gather_facts: false
+
+  tasks:
+    - name: Tester la connectivite Ansible
+      ansible.builtin.ping:

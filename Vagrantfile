@@ -80,6 +80,14 @@ Vagrant.configure("2") do |config|
     # Nom de la machine dans Ubuntu
     process.vm.hostname = "ot-process"
 
+    # Interface du reseau industriel PROCESS
+    # Reseau VMware VMnet3 : 192.168.100.0/24
+    # Adresse statique de la machine OT-PROCESS
+
+    process.vm.network "private_network",
+      ip: "192.168.100.10",
+      netmask: "255.255.255.0"
+
     # Configuration VMware
     process.vm.provider "vmware_desktop" do |vmware|
 
