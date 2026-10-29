@@ -38,3 +38,6 @@ htmlcov/
 *.log
 backups/
 data/
+
+# OpenPLC Editor - fichiers de compilation et de simulation
+/openplc/build/

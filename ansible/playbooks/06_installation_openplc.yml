@@ -1,0 +1,16 @@
+---
+- name: Installer OpenPLC Runtime v4
+  hosts: process
+  become: true
+
+  tasks:
+
+    - name: Installer OpenPLC en mode natif
+      ansible.builtin.command:
+        argv:
+          - ./install.sh
+          - --native
+        chdir: /opt/openplc-runtime
+        creates: /opt/openplc-runtime/.installed
+      async: 3600
+      poll: 15

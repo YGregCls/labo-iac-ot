@@ -1,0 +1,13 @@
+---
+- name: Recuperer OpenPLC Runtime v4
+  hosts: process
+  become: true
+
+  tasks:
+
+    - name: Cloner le depot officiel OpenPLC
+      ansible.builtin.git:
+        repo: https://github.com/Autonomy-Logic/openplc-runtime.git
+        dest: /opt/openplc-runtime
+        version: "8d69d935a7915bef9b67bbea46cf87c68d112246"
+        update: false
