@@ -27,13 +27,6 @@
         "globalVariables": []
       }
     },
-    "libraries": [],
-    "debugVariables": {
-      "pous": {
-        "main": [
-          "Niveau_Cuve"
-        ]
-      }
-    }
+    "libraries": []
   }
 }
