@@ -1,0 +1,59 @@
+---
+- name: Preparer l'environnement de simulation Python OT
+  hosts: controllers
+  become: false
+
+  tasks:
+
+    - name: Verifier la presence du simulateur Python
+      ansible.builtin.stat:
+        path: /vagrant/simulation/simulateur_cuve.py
+      register: simulateur_python
+
+    - name: Verifier la presence du fichier requirements
+      ansible.builtin.stat:
+        path: /vagrant/simulation/requirements.txt
+      register: requirements_python
+
+    - name: Valider les fichiers de simulation
+      ansible.builtin.assert:
+        that:
+          - simulateur_python.stat.isreg | default(false)
+          - requirements_python.stat.isreg | default(false)
+        fail_msg: "Les fichiers de simulation Python sont introuvables."
+        success_msg: "Les fichiers de simulation Python sont presents."
+
+    - name: Installer les dependances systeme Python
+      become: true
+      ansible.builtin.apt:
+        name:
+          - python3
+          - python3-venv
+        state: present
+
+    - name: Creer l'environnement virtuel Python
+      ansible.builtin.command:
+        argv:
+          - /usr/bin/python3
+          - -m
+          - venv
+          - /home/vagrant/venv-simulation-ot
+        creates: /home/vagrant/venv-simulation-ot/bin/python
+
+    - name: Installer les dependances du simulateur
+      ansible.builtin.pip:
+        requirements: /vagrant/simulation/requirements.txt
+        executable: /home/vagrant/venv-simulation-ot/bin/pip
+
+    - name: Verifier l'import de PyModbus
+      ansible.builtin.command:
+        argv:
+          - /home/vagrant/venv-simulation-ot/bin/python
+          - -c
+          - "import pymodbus; print(pymodbus.__version__)"
+      register: verification_pymodbus
+      changed_when: false
+
+    - name: Afficher la version de PyModbus
+      ansible.builtin.debug:
+        msg: "Version PyModbus installee : {{ verification_pymodbus.stdout }}"
