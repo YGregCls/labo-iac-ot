@@ -1,0 +1,186 @@
+---
+# ============================================================
+# PROJET : LABO IaC OT
+# PHASE 08 : PREPARATION DU POSTE OT-ADMIN-01
+#
+# Systeme : Ubuntu 24.04
+# Zone : ADMINIaC
+# Adresse IP : 192.168.56.20
+#
+# Objectifs :
+# - Installer XFCE et Xorg
+# - Installer et configurer LightDM GTK Greeter
+# - Configurer le clavier francais AZERTY
+# - Definir XFCE comme session graphique
+# - Activer le demarrage graphique
+# - Verifier les composants installes
+# ============================================================
+
+- name: Preparer le poste d'administration graphique OT
+  hosts: admin
+  become: true
+
+  vars:
+    ot_admin_user: vagrant
+    ot_admin_session: xfce
+
+  tasks:
+
+    # ========================================================
+    # 1. VERIFICATION DU SYSTEME
+    # ========================================================
+
+    - name: Verifier la distribution Ubuntu
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['distribution'] == 'Ubuntu'
+          - ansible_facts['distribution_version'] is version('24.04', '==')
+        fail_msg: "Ce playbook necessite Ubuntu 24.04."
+        success_msg: "Distribution Ubuntu 24.04 validee."
+
+    # ========================================================
+    # 2. INSTALLATION DE L'ENVIRONNEMENT GRAPHIQUE
+    # ========================================================
+
+    - name: Installer XFCE et les composants graphiques
+      ansible.builtin.apt:
+        name:
+          - xfce4
+          - xorg
+          - lightdm
+          - lightdm-gtk-greeter
+          - dbus-x11
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+      environment:
+        DEBIAN_FRONTEND: noninteractive
+
+    # ========================================================
+    # 3. CONFIGURATION DU CLAVIER
+    # ========================================================
+
+    - name: Configurer le modele de clavier
+      ansible.builtin.lineinfile:
+        path: /etc/default/keyboard
+        regexp: '^XKBMODEL='
+        line: 'XKBMODEL="pc105"'
+      notify: Redemarrer LightDM
+
+    - name: Configurer le clavier francais
+      ansible.builtin.lineinfile:
+        path: /etc/default/keyboard
+        regexp: '^XKBLAYOUT='
+        line: 'XKBLAYOUT="fr"'
+      notify: Redemarrer LightDM
+
+    - name: Configurer la variante AZERTY
+      ansible.builtin.lineinfile:
+        path: /etc/default/keyboard
+        regexp: '^XKBVARIANT='
+        line: 'XKBVARIANT="azerty"'
+      notify: Redemarrer LightDM
+
+    # ========================================================
+    # 4. CONFIGURATION GLOBALE DE LIGHTDM
+    # ========================================================
+
+    - name: Creer le repertoire de configuration LightDM
+      ansible.builtin.file:
+        path: /etc/lightdm/lightdm.conf.d
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Definir GTK Greeter et XFCE par defaut
+      ansible.builtin.copy:
+        dest: /etc/lightdm/lightdm.conf.d/90-ot-admin.conf
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          [Seat:*]
+          greeter-session=lightdm-gtk-greeter
+          user-session=xfce
+      notify: Redemarrer LightDM
+
+    # ========================================================
+    # 5. SESSION GRAPHIQUE DE L'UTILISATEUR
+    # ========================================================
+
+    - name: Configurer la session XFCE dans dmrc
+      ansible.builtin.copy:
+        dest: "/home/{{ ot_admin_user }}/.dmrc"
+        owner: "{{ ot_admin_user }}"
+        group: "{{ ot_admin_user }}"
+        mode: "0644"
+        content: |
+          [Desktop]
+          Session=xfce
+
+    - name: Verifier le fichier AccountsService
+      ansible.builtin.stat:
+        path: "/var/lib/AccountsService/users/{{ ot_admin_user }}"
+      register: accountsservice_user
+
+    - name: Configurer XFCE dans AccountsService
+      ansible.builtin.lineinfile:
+        path: "/var/lib/AccountsService/users/{{ ot_admin_user }}"
+        regexp: '^XSession='
+        line: 'XSession=xfce'
+      when: accountsservice_user.stat.exists
+
+    # ========================================================
+    # 6. ACTIVATION DU GESTIONNAIRE GRAPHIQUE
+    # ========================================================
+
+    - name: Activer et demarrer LightDM
+      ansible.builtin.systemd_service:
+        name: lightdm
+        enabled: true
+        state: started
+
+    # ========================================================
+    # 7. VERIFICATIONS
+    # ========================================================
+
+    - name: Verifier la presence de XFCE
+      ansible.builtin.command:
+        argv:
+          - dpkg-query
+          - -W
+          - "-f=${Status}"
+          - xfce4
+      register: verification_xfce
+      changed_when: false
+
+    - name: Confirmer l'installation de XFCE
+      ansible.builtin.assert:
+        that:
+          - verification_xfce.stdout == "install ok installed"
+        fail_msg: "XFCE n'est pas correctement installe."
+        success_msg: "XFCE est correctement installe."
+
+    - name: Verifier la session graphique XFCE
+      ansible.builtin.stat:
+        path: /usr/share/xsessions/xfce.desktop
+      register: verification_session
+
+    - name: Confirmer la presence de la session XFCE
+      ansible.builtin.assert:
+        that:
+          - verification_session.stat.exists
+        fail_msg: "La session graphique XFCE est introuvable."
+        success_msg: "La session graphique XFCE est disponible."
+
+  # ==========================================================
+  # HANDLERS
+  # ==========================================================
+
+  handlers:
+
+    - name: Redemarrer LightDM
+      ansible.builtin.systemd_service:
+        name: lightdm
+        state: restarted
