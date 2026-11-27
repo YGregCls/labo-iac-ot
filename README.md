@@ -3,7 +3,7 @@
 
 > Laboratoire pédagogique d'Infrastructure as Code (IaC), de réseaux industriels et de cybersécurité OT, construit avec VMware Workstation, Vagrant, Ansible, Terraform, Docker, Docker Compose et Python.
 
-**Statut :** 🚧 En développement — infrastructure et services industriels en cours de construction.
+**Statut :** 🚧 En développement 
 
 ## 1. Présentation du projet
 
